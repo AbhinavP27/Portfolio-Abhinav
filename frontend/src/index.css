@@ -60,3 +60,12 @@ select,
 button {
   font: inherit;
 }
+
+@import "tailwindcss";
+
+body {
+  margin: 0;
+  padding: 0;
+  background: #0B0F19;
+  font-family: Inter, sans-serif;
+}
