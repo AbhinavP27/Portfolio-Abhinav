@@ -1,15 +1,17 @@
+from django.db import connection
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Certificate, ContactMessage, Experience, HeroSection, Project, Skill, ThemeSettings
+from .models import AboutSection, Certificate, ContactMessage, Experience, HeroSection, Project, Skill, ThemeSettings
 from .permissions import AdminOnly, AdminWriteOrReadOnly
 from .serializers import (
     CertificateSerializer,
     ContactMessageSerializer,
     ExperienceSerializer,
+    AboutSectionSerializer,
     HeroSectionSerializer,
     ProjectSerializer,
     SkillSerializer,
@@ -17,44 +19,91 @@ from .serializers import (
 )
 
 
-class HeroSectionViewSet(viewsets.ModelViewSet):
-    queryset = HeroSection.objects.all()
+class ReuseIdsOnSQLiteMixin:
+    def _next_available_id(self):
+        ids = list(self.get_queryset().order_by('id').values_list('id', flat=True))
+        expected = 1
+        for current in ids:
+            if current != expected:
+                return expected
+            expected += 1
+        return expected
+
+    def _sync_sqlite_sequence(self, model):
+        if connection.vendor != 'sqlite':
+            return
+
+        table = model._meta.db_table
+        quoted_table = connection.ops.quote_name(table)
+
+        with connection.cursor() as cursor:
+            cursor.execute(f'SELECT MAX(id) FROM {quoted_table}')
+            max_id = cursor.fetchone()[0]
+            if max_id is None:
+                cursor.execute('DELETE FROM sqlite_sequence WHERE name = %s', [table])
+                return
+
+            cursor.execute('UPDATE sqlite_sequence SET seq = %s WHERE name = %s', [max_id, table])
+            if cursor.rowcount == 0:
+                cursor.execute('INSERT INTO sqlite_sequence(name, seq) VALUES (%s, %s)', [table, max_id])
+
+    def perform_create(self, serializer):
+        if connection.vendor == 'sqlite':
+            instance = serializer.save(id=self._next_available_id())
+            self._sync_sqlite_sequence(instance.__class__)
+            return
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        model = instance.__class__
+        super().perform_destroy(instance)
+        self._sync_sqlite_sequence(model)
+
+
+class HeroSectionViewSet(ReuseIdsOnSQLiteMixin, viewsets.ModelViewSet):
+    queryset = HeroSection.objects.all().order_by('-updated_at', '-created_at')
     serializer_class = HeroSectionSerializer
     permission_classes = [AdminWriteOrReadOnly]
 
 
-class SkillViewSet(viewsets.ModelViewSet):
-    queryset = Skill.objects.all()
+class AboutSectionViewSet(ReuseIdsOnSQLiteMixin, viewsets.ModelViewSet):
+    queryset = AboutSection.objects.all().order_by('-updated_at', '-created_at')
+    serializer_class = AboutSectionSerializer
+    permission_classes = [AdminWriteOrReadOnly]
+
+
+class SkillViewSet(ReuseIdsOnSQLiteMixin, viewsets.ModelViewSet):
+    queryset = Skill.objects.all().order_by('category', 'order', 'name')
     serializer_class = SkillSerializer
     permission_classes = [AdminWriteOrReadOnly]
 
 
-class ProjectViewSet(viewsets.ModelViewSet):
-    queryset = Project.objects.all()
+class ProjectViewSet(ReuseIdsOnSQLiteMixin, viewsets.ModelViewSet):
+    queryset = Project.objects.all().order_by('category', 'order', '-featured', '-created_at')
     serializer_class = ProjectSerializer
     permission_classes = [AdminWriteOrReadOnly]
 
 
-class ExperienceViewSet(viewsets.ModelViewSet):
-    queryset = Experience.objects.all()
+class ExperienceViewSet(ReuseIdsOnSQLiteMixin, viewsets.ModelViewSet):
+    queryset = Experience.objects.all().order_by('-start_date', 'order')
     serializer_class = ExperienceSerializer
     permission_classes = [AdminWriteOrReadOnly]
 
 
-class CertificateViewSet(viewsets.ModelViewSet):
-    queryset = Certificate.objects.all()
+class CertificateViewSet(ReuseIdsOnSQLiteMixin, viewsets.ModelViewSet):
+    queryset = Certificate.objects.all().order_by('-issue_date', 'order')
     serializer_class = CertificateSerializer
     permission_classes = [AdminWriteOrReadOnly]
 
 
-class ThemeSettingsViewSet(viewsets.ModelViewSet):
-    queryset = ThemeSettings.objects.all()
+class ThemeSettingsViewSet(ReuseIdsOnSQLiteMixin, viewsets.ModelViewSet):
+    queryset = ThemeSettings.objects.all().order_by('-updated_at', '-created_at')
     serializer_class = ThemeSettingsSerializer
     permission_classes = [AdminWriteOrReadOnly]
 
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def track_visit(self, request):
-        theme = ThemeSettings.objects.first()
+        theme = ThemeSettings.objects.order_by('-updated_at', '-created_at').first()
         if not theme:
             theme = ThemeSettings.objects.create()
         theme.total_visitors += 1
@@ -63,7 +112,7 @@ class ThemeSettingsViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def track_resume_download(self, request):
-        theme = ThemeSettings.objects.first()
+        theme = ThemeSettings.objects.order_by('-updated_at', '-created_at').first()
         if not theme:
             theme = ThemeSettings.objects.create()
         theme.total_resume_downloads += 1
@@ -97,7 +146,7 @@ class DashboardStatsView(APIView):
     permission_classes = [AdminOnly]
 
     def get(self, request):
-        theme = ThemeSettings.objects.first()
+        theme = ThemeSettings.objects.order_by('-updated_at', '-created_at').first()
         return Response(
             {
                 'projects': Project.objects.count(),

@@ -2,6 +2,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from portfolio.views import (
+    AboutSectionViewSet,
     CertificateViewSet,
     ContactMessageViewSet,
     DashboardStatsView,
@@ -14,6 +15,7 @@ from portfolio.views import (
 
 router = DefaultRouter()
 router.register('hero', HeroSectionViewSet, basename='hero')
+router.register('about', AboutSectionViewSet, basename='about')
 router.register('skills', SkillViewSet, basename='skills')
 router.register('projects', ProjectViewSet, basename='projects')
 router.register('experience', ExperienceViewSet, basename='experience')

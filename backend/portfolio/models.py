@@ -19,9 +19,24 @@ class HeroSection(TimeStampedModel):
     secondary_button_url = models.CharField(max_length=255, default='#contact')
     profile_image = models.ImageField(upload_to='hero/', blank=True, null=True)
     alternate_profile_image = models.ImageField(upload_to='hero/', blank=True, null=True)
+    resume_file = models.FileField(upload_to='resume/', blank=True, null=True)
 
     def __str__(self):
         return 'Hero Section'
+
+
+class AboutSection(TimeStampedModel):
+    section_label = models.CharField(max_length=40, default='About')
+    heading = models.CharField(max_length=255, default='Engineering premium products from concept to scale.')
+    description = models.TextField(
+        default=(
+            'I specialize in end-to-end product engineering across React frontends and Django APIs. '
+            'My focus is reliability, refined visual systems, and maintainable architecture that supports fast iteration.'
+        )
+    )
+
+    def __str__(self):
+        return 'About Section'
 
 
 class Skill(TimeStampedModel):
@@ -45,8 +60,13 @@ class Skill(TimeStampedModel):
 
 
 class Project(TimeStampedModel):
+    class Category(models.TextChoices):
+        STATIC = 'static', 'Static'
+        DYNAMIC = 'dynamic', 'Dynamic'
+
     title = models.CharField(max_length=120)
     slug = models.SlugField(max_length=150, unique=True)
+    category = models.CharField(max_length=20, choices=Category.choices, default=Category.DYNAMIC)
     summary = models.CharField(max_length=255)
     description = models.TextField()
     image = models.ImageField(upload_to='projects/', blank=True, null=True)
@@ -57,7 +77,7 @@ class Project(TimeStampedModel):
     order = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
-        ordering = ['-featured', 'order', '-created_at']
+        ordering = ['category', 'order', '-featured', '-created_at']
 
     def __str__(self):
         return self.title

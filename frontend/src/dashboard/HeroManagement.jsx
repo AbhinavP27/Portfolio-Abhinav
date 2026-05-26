@@ -8,6 +8,7 @@ const fields = [
   { name: 'primary_button_url', label: 'Primary Button URL' },
   { name: 'secondary_button_label', label: 'Secondary Button Label' },
   { name: 'secondary_button_url', label: 'Secondary Button URL' },
+  { name: 'resume_file', label: 'Resume File', type: 'file' },
   { name: 'profile_image', label: 'Profile Image', type: 'file' },
   { name: 'alternate_profile_image', label: 'Reveal Image', type: 'file' },
 ];

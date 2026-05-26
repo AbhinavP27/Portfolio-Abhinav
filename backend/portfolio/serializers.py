@@ -1,11 +1,17 @@
 from rest_framework import serializers
 
-from .models import Certificate, ContactMessage, Experience, HeroSection, Project, Skill, ThemeSettings
+from .models import AboutSection, Certificate, ContactMessage, Experience, HeroSection, Project, Skill, ThemeSettings
 
 
 class HeroSectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = HeroSection
+        fields = '__all__'
+
+
+class AboutSectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AboutSection
         fields = '__all__'
 
 

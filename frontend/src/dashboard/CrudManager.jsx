@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useCollection } from '../hooks/useCollection';
 import { apiClient } from '../services/api';
 
@@ -16,6 +16,51 @@ function CrudManager({ endpoint, title, fields, singleRecord = false }) {
   const [form, setForm] = useState(initialState);
   const [editingId, setEditingId] = useState(null);
   const [status, setStatus] = useState('');
+  const hasOrderField = useMemo(() => fields.some((field) => field.name === 'order'), [fields]);
+  const displayedItems = useMemo(() => {
+    const next = [...items];
+
+    if (!hasOrderField) return next;
+
+    next.sort((a, b) => {
+      if ('category' in a || 'category' in b) {
+        const categoryCompare = String(a.category || '').localeCompare(String(b.category || ''));
+        if (categoryCompare !== 0) return categoryCompare;
+      }
+
+      const orderCompare = Number(a.order ?? 0) - Number(b.order ?? 0);
+      if (orderCompare !== 0) return orderCompare;
+
+      if ('featured' in a || 'featured' in b) {
+        const featuredCompare = Number(Boolean(b.featured)) - Number(Boolean(a.featured));
+        if (featuredCompare !== 0) return featuredCompare;
+      }
+
+      const nameA = String(a.title || a.name || a.company || '').toLowerCase();
+      const nameB = String(b.title || b.name || b.company || '').toLowerCase();
+      const nameCompare = nameA.localeCompare(nameB);
+      if (nameCompare !== 0) return nameCompare;
+
+      return Number(a.id || 0) - Number(b.id || 0);
+    });
+
+    return next;
+  }, [hasOrderField, items]);
+
+  useEffect(() => {
+    if (!singleRecord || displayedItems.length === 0) return;
+    if (editingId && displayedItems.some((item) => item.id === editingId)) return;
+
+    const current = displayedItems[0];
+    const next = { ...initialState };
+    fields.forEach((field) => {
+      const value = current[field.name];
+      next[field.name] = field.type === 'array' ? (value || []).join(', ') : value ?? '';
+    });
+
+    setForm(next);
+    setEditingId(current.id);
+  }, [displayedItems, editingId, fields, initialState, singleRecord]);
 
   const prepareData = () => {
     const hasFile = fields.some((field) => field.type === 'file');
@@ -75,10 +120,10 @@ function CrudManager({ endpoint, title, fields, singleRecord = false }) {
     setStatus('Saving...');
     try {
       const payload = prepareData();
-      if (singleRecord && items.length > 0 && !editingId) {
-        await apiClient.put(`/${endpoint}/${items[0].id}/`, payload);
-      } else if (editingId) {
+      if (editingId) {
         await apiClient.put(`/${endpoint}/${editingId}/`, payload);
+      } else if (singleRecord && displayedItems.length > 0) {
+        await apiClient.put(`/${endpoint}/${displayedItems[0].id}/`, payload);
       } else {
         await apiClient.post(`/${endpoint}/`, payload);
       }
@@ -171,27 +216,31 @@ function CrudManager({ endpoint, title, fields, singleRecord = false }) {
         <table className="w-full text-left text-sm">
           <thead className="bg-white/5 text-slate-300">
             <tr>
+              <th className="px-4 py-3">#</th>
               <th className="px-4 py-3">ID</th>
               <th className="px-4 py-3">Item</th>
+              {hasOrderField && <th className="px-4 py-3">Order</th>}
               <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading && (
               <tr>
-                <td className="px-4 py-4" colSpan={3}>Loading...</td>
+                <td className="px-4 py-4" colSpan={hasOrderField ? 5 : 4}>Loading...</td>
               </tr>
             )}
-            {!loading && items.length === 0 && (
+            {!loading && displayedItems.length === 0 && (
               <tr>
-                <td className="px-4 py-4 text-slate-400" colSpan={3}>No records found.</td>
+                <td className="px-4 py-4 text-slate-400" colSpan={hasOrderField ? 5 : 4}>No records found.</td>
               </tr>
             )}
             {!loading &&
-              items.map((item) => (
+              displayedItems.map((item, index) => (
                 <tr key={item.id} className="border-t border-white/10">
+                  <td className="px-4 py-3">{index + 1}</td>
                   <td className="px-4 py-3">{item.id}</td>
                   <td className="px-4 py-3">{item.title || item.name || item.headline || item.company || item.theme_name}</td>
+                  {hasOrderField && <td className="px-4 py-3">{Number(item.order ?? 0)}</td>}
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <button onClick={() => onEdit(item)} className="rounded-lg border border-cyan-400/40 px-3 py-1">Edit</button>

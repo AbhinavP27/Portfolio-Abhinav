@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { apiClient } from '../services/api';
+import { publicApiClient } from '../services/api';
 
 function ContactForm() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
@@ -10,7 +10,7 @@ function ContactForm() {
   const onSubmit = async (event) => {
     event.preventDefault();
     try {
-      await apiClient.post('/messages/', form);
+      await publicApiClient.post('/messages/', form);
       setStatus('Message sent successfully.');
       setForm({ name: '', email: '', subject: '', message: '' });
     } catch {

@@ -1,15 +1,16 @@
-import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+ï»¿import { motion } from 'framer-motion';
+import { useEffect, useMemo, useState } from 'react';
 import ContactForm from '../components/ContactForm';
 import Hero from '../components/Hero';
 import Navbar from '../components/Navbar';
 import ProjectCard from '../components/ProjectCard';
 import SkillsGrid from '../components/SkillsGrid';
 import Timeline from '../components/Timeline';
-import { apiClient, mediaUrl } from '../services/api';
+import { mediaUrl, publicApiClient } from '../services/api';
 
 function PublicPortfolioPage() {
   const [hero, setHero] = useState(null);
+  const [about, setAbout] = useState(null);
   const [theme, setTheme] = useState(null);
   const [skills, setSkills] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -17,35 +18,47 @@ function PublicPortfolioPage() {
   const [certificates, setCertificates] = useState([]);
 
   useEffect(() => {
-    const fetchAll = async () => {
-      try {
-        const [heroRes, themeRes, skillsRes, projectsRes, expRes, certRes] = await Promise.all([
-          apiClient.get('/hero/'),
-          apiClient.get('/theme/'),
-          apiClient.get('/skills/'),
-          apiClient.get('/projects/'),
-          apiClient.get('/experience/'),
-          apiClient.get('/certificates/'),
-        ]);
+    const pickLatest = (records = []) =>
+      [...records].sort((a, b) => {
+        const updated = new Date(b.updated_at || 0).getTime() - new Date(a.updated_at || 0).getTime();
+        if (updated !== 0) return updated;
+        const created = new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+        if (created !== 0) return created;
+        return Number(b.id || 0) - Number(a.id || 0);
+      })[0] || null;
 
-        setHero(heroRes.data[0] || null);
-        setTheme(themeRes.data[0] || null);
-        setSkills(skillsRes.data);
-        setProjects(projectsRes.data);
-        setExperience(expRes.data);
-        setCertificates(certRes.data);
-      } catch (error) {
-        console.error(error);
-      }
+    const fetchAll = async () => {
+      const requests = [
+        publicApiClient.get('/hero/'),
+        publicApiClient.get('/about/'),
+        publicApiClient.get('/theme/'),
+        publicApiClient.get('/skills/'),
+        publicApiClient.get('/projects/'),
+        publicApiClient.get('/experience/'),
+        publicApiClient.get('/certificates/'),
+      ];
+      const [heroRes, aboutRes, themeRes, skillsRes, projectsRes, expRes, certRes] = await Promise.allSettled(requests);
+
+      if (heroRes.status === 'fulfilled') setHero(pickLatest(heroRes.value.data));
+      if (aboutRes.status === 'fulfilled') setAbout(pickLatest(aboutRes.value.data));
+      if (themeRes.status === 'fulfilled') setTheme(pickLatest(themeRes.value.data));
+      if (skillsRes.status === 'fulfilled') setSkills(skillsRes.value.data);
+      if (projectsRes.status === 'fulfilled') setProjects(projectsRes.value.data);
+      if (expRes.status === 'fulfilled') setExperience(expRes.value.data);
+      if (certRes.status === 'fulfilled') setCertificates(certRes.value.data);
     };
 
     fetchAll();
-    apiClient.post('/theme/track_visit/').catch(() => null);
+    publicApiClient.post('/theme/track_visit/').catch(() => null);
   }, []);
 
   const onResumeDownload = () => {
-    apiClient.post('/theme/track_resume_download/').catch(() => null);
+    publicApiClient.post('/theme/track_resume_download/').catch(() => null);
   };
+
+  const staticProjects = useMemo(() => projects.filter((project) => project.category === 'static'), [projects]);
+  const dynamicProjects = useMemo(() => projects.filter((project) => project.category !== 'static'), [projects]);
+  const resumeDownloadUrl = useMemo(() => (hero?.resume_file ? mediaUrl(hero.resume_file) : ''), [hero]);
 
   return (
     <div className="relative overflow-x-hidden">
@@ -60,11 +73,11 @@ function PublicPortfolioPage() {
             viewport={{ once: true }}
             className="glass rounded-3xl p-8 md:p-12"
           >
-            <p className="text-sm uppercase tracking-[0.3em] text-slate-400">About</p>
-            <h2 className="mt-4 text-4xl font-bold text-white">{hero?.subheadline || 'Engineering premium products from concept to scale.'}</h2>
+            <p className="text-sm uppercase tracking-[0.3em] text-slate-400">{about?.section_label || 'About'}</p>
+            <h2 className="mt-4 text-4xl font-bold text-white">{about?.heading || 'Engineering premium products from concept to scale.'}</h2>
             <p className="mt-6 max-w-3xl text-slate-300">
-              I specialize in end-to-end product engineering across React frontends and Django APIs. My focus is reliability,
-              refined visual systems, and maintainable architecture that supports fast iteration.
+              {about?.description ||
+                'I specialize in end-to-end product engineering across React frontends and Django APIs. My focus is reliability, refined visual systems, and maintainable architecture that supports fast iteration.'}
             </p>
           </motion.div>
         </section>
@@ -82,10 +95,27 @@ function PublicPortfolioPage() {
             <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Projects</p>
             <h2 className="mt-3 text-4xl font-bold text-white">Selected product work</h2>
           </div>
-          <div className="grid gap-6 lg:grid-cols-2">
-            {projects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
+
+          <div className="space-y-8">
+            <div className="space-y-4">
+              <h3 className="text-2xl font-semibold text-white">Static</h3>
+              <div className="grid gap-6 lg:grid-cols-2">
+                {staticProjects.map((project) => (
+                  <ProjectCard key={project.id} project={project} />
+                ))}
+                {staticProjects.length === 0 && <p className="text-sm text-slate-400">No static projects added yet.</p>}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-2xl font-semibold text-white">Dynamic</h3>
+              <div className="grid gap-6 lg:grid-cols-2">
+                {dynamicProjects.map((project) => (
+                  <ProjectCard key={project.id} project={project} />
+                ))}
+                {dynamicProjects.length === 0 && <p className="text-sm text-slate-400">No dynamic projects added yet.</p>}
+              </div>
+            </div>
           </div>
         </section>
 
@@ -128,8 +158,8 @@ function PublicPortfolioPage() {
         <section id="contact" className="section-wrap grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-start">
           <div>
             <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Contact</p>
-            <h2 className="mt-3 text-4xl font-bold text-white">Let’s build your next platform.</h2>
-            <p className="mt-4 text-slate-300">Share your scope and I’ll reply with technical direction, estimates, and architecture recommendations.</p>
+            <h2 className="mt-3 text-4xl font-bold text-white">Let's build your next platform.</h2>
+            <p className="mt-4 text-slate-300">Share your scope and I'll reply with technical direction, estimates, and architecture recommendations.</p>
           </div>
           <ContactForm />
         </section>
@@ -137,11 +167,17 @@ function PublicPortfolioPage() {
 
       <footer className="border-t border-white/10 py-10">
         <div className="section-wrap flex flex-col items-start justify-between gap-4 text-sm text-slate-400 md:flex-row md:items-center">
-          <p>© {new Date().getFullYear()} Abhinav Portfolio Platform</p>
+          <p>&copy; {new Date().getFullYear()} Abhinav Portfolio Platform</p>
           <div className="flex items-center gap-5">
             <a href="https://github.com" target="_blank" rel="noreferrer">GitHub</a>
             <a href="https://linkedin.com" target="_blank" rel="noreferrer">LinkedIn</a>
-            <a href="#" onClick={onResumeDownload}>Download Resume</a>
+            {resumeDownloadUrl ? (
+              <a href={resumeDownloadUrl} target="_blank" rel="noreferrer" onClick={onResumeDownload}>
+                Download Resume
+              </a>
+            ) : (
+              <span className="text-slate-500">Resume Not Added</span>
+            )}
           </div>
         </div>
       </footer>

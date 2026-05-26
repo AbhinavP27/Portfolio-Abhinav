@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import DashboardLayout from './dashboard/DashboardLayout';
 import DashboardOverview from './dashboard/DashboardOverview';
 import HeroManagement from './dashboard/HeroManagement';
+import AboutManagement from './dashboard/AboutManagement';
 import SkillsManagement from './dashboard/SkillsManagement';
 import ProjectsManagement from './dashboard/ProjectsManagement';
 import ExperienceManagement from './dashboard/ExperienceManagement';
@@ -30,6 +31,7 @@ function App() {
         <Route index element={<Navigate to="overview" replace />} />
         <Route path="overview" element={<DashboardOverview />} />
         <Route path="hero" element={<HeroManagement />} />
+        <Route path="about" element={<AboutManagement />} />
         <Route path="skills" element={<SkillsManagement />} />
         <Route path="projects" element={<ProjectsManagement />} />
         <Route path="experience" element={<ExperienceManagement />} />

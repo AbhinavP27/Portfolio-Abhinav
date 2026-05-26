@@ -34,6 +34,10 @@ export const apiClient = axios.create({
   baseURL: API_BASE_URL,
 });
 
+export const publicApiClient = axios.create({
+  baseURL: API_BASE_URL,
+});
+
 apiClient.interceptors.request.use((config) => {
   const token = tokenStore.getAccess();
   if (token) config.headers.Authorization = `Bearer ${token}`;
