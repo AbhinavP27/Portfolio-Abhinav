@@ -2,6 +2,20 @@ import { useEffect, useMemo, useState } from 'react';
 import { useCollection } from '../hooks/useCollection';
 import { apiClient } from '../services/api';
 
+const getFileNameFromPath = (value) => {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const clean = raw.split('?')[0];
+  const parts = clean.split('/');
+  return parts[parts.length - 1] || '';
+};
+
+const getDisplayFileName = (value) => {
+  if (!value) return '';
+  if (value instanceof File) return value.name;
+  return getFileNameFromPath(value);
+};
+
 function CrudManager({ endpoint, title, fields, singleRecord = false }) {
   const { items, loading, error, refetch } = useCollection(endpoint);
   const initialState = useMemo(
@@ -17,6 +31,7 @@ function CrudManager({ endpoint, title, fields, singleRecord = false }) {
   const [editingId, setEditingId] = useState(null);
   const [status, setStatus] = useState('');
   const hasOrderField = useMemo(() => fields.some((field) => field.name === 'order'), [fields]);
+  const fileFieldNames = useMemo(() => fields.filter((field) => field.type === 'file').map((field) => field.name), [fields]);
   const displayedItems = useMemo(() => {
     const next = [...items];
 
@@ -131,8 +146,12 @@ function CrudManager({ endpoint, title, fields, singleRecord = false }) {
       setEditingId(null);
       setStatus('Saved successfully.');
       await refetch();
-    } catch {
-      setStatus('Save failed.');
+    } catch (err) {
+      const detail =
+        err.response?.data?.detail ||
+        Object.values(err.response?.data || {}).flat().join(' ') ||
+        'Save failed.';
+      setStatus(detail);
     }
   };
 
@@ -181,7 +200,12 @@ function CrudManager({ endpoint, title, fields, singleRecord = false }) {
               />
             )}
             {field.type === 'file' && (
-              <input name={field.name} type="file" onChange={(e) => onChange(e, 'file')} className="w-full text-sm" />
+              <div className="space-y-2">
+                <input name={field.name} type="file" onChange={(e) => onChange(e, 'file')} className="w-full text-sm" />
+                {getDisplayFileName(form[field.name]) && (
+                  <p className="text-xs text-slate-400">Current: {getDisplayFileName(form[field.name])}</p>
+                )}
+              </div>
             )}
             {!['textarea', 'select', 'boolean', 'file'].includes(field.type) && (
               <input
@@ -239,7 +263,16 @@ function CrudManager({ endpoint, title, fields, singleRecord = false }) {
                 <tr key={item.id} className="border-t border-white/10">
                   <td className="px-4 py-3">{index + 1}</td>
                   <td className="px-4 py-3">{item.id}</td>
-                  <td className="px-4 py-3">{item.title || item.name || item.headline || item.company || item.theme_name}</td>
+                  <td className="px-4 py-3">
+                    {(() => {
+                      const baseLabel = item.title || item.name || item.headline || item.company || item.theme_name || item.project_title || '';
+                      const fileName = fileFieldNames.map((fieldName) => getFileNameFromPath(item[fieldName])).find(Boolean);
+                      if (baseLabel && fileName) return `${baseLabel} (${fileName})`;
+                      if (baseLabel) return baseLabel;
+                      if (fileName) return fileName;
+                      return '-';
+                    })()}
+                  </td>
                   {hasOrderField && <td className="px-4 py-3">{Number(item.order ?? 0)}</td>}
                   <td className="px-4 py-3">
                     <div className="flex gap-2">

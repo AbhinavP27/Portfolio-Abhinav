@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import AboutSection, Certificate, ContactMessage, Experience, HeroSection, Project, Skill, ThemeSettings
+from .models import AboutSection, Certificate, ContactMessage, Experience, HeroSection, Project, ProjectImage, Skill, ThemeSettings
 from .permissions import AdminOnly, AdminWriteOrReadOnly
 from .serializers import (
     CertificateSerializer,
@@ -14,6 +14,7 @@ from .serializers import (
     AboutSectionSerializer,
     HeroSectionSerializer,
     ProjectSerializer,
+    ProjectImageSerializer,
     SkillSerializer,
     ThemeSettingsSerializer,
 )
@@ -79,8 +80,14 @@ class SkillViewSet(ReuseIdsOnSQLiteMixin, viewsets.ModelViewSet):
 
 
 class ProjectViewSet(ReuseIdsOnSQLiteMixin, viewsets.ModelViewSet):
-    queryset = Project.objects.all().order_by('category', 'order', '-featured', '-created_at')
+    queryset = Project.objects.prefetch_related('images').all().order_by('category', 'order', '-featured', '-created_at')
     serializer_class = ProjectSerializer
+    permission_classes = [AdminWriteOrReadOnly]
+
+
+class ProjectImageViewSet(ReuseIdsOnSQLiteMixin, viewsets.ModelViewSet):
+    queryset = ProjectImage.objects.select_related('project').all().order_by('project_id', 'order', 'id')
+    serializer_class = ProjectImageSerializer
     permission_classes = [AdminWriteOrReadOnly]
 
 

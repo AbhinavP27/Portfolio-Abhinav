@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { cardHover } from '../animations/motionPresets';
 import { resolveSkillIcon } from '../utils/skillIcons';
+import { mediaUrl } from '../services/api';
 
 function SkillsGrid({ skills = [] }) {
   const groups = ['frontend', 'backend', 'tools', 'ai'];
@@ -18,11 +19,12 @@ function SkillsGrid({ skills = [] }) {
                   <div className="mb-1 flex items-center justify-between text-sm text-slate-200">
                     <span className="flex items-center gap-2">
                       {(() => {
-                        const icon = resolveSkillIcon(skill.icon);
+                        const icon = resolveSkillIcon(skill);
                         if (!icon) return null;
 
                         if (icon.type === 'image') {
-                          return <img src={icon.value} alt="" className="h-4 w-4 rounded-sm object-contain" />;
+                          const src = icon.value.startsWith('http://') || icon.value.startsWith('https://') ? icon.value : mediaUrl(icon.value);
+                          return <img src={src} alt="" className="h-4 w-4 rounded-sm object-contain" />;
                         }
 
                         if (icon.type === 'component') {

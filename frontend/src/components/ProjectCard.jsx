@@ -1,15 +1,71 @@
 import { motion } from 'framer-motion';
+import { useEffect, useMemo, useState } from 'react';
 import { cardHover } from '../animations/motionPresets';
 import { mediaUrl } from '../services/api';
 
 function ProjectCard({ project }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const images = useMemo(() => {
+    const fromGallery = (project.images || []).map((item) => item.image).filter(Boolean);
+    const all = [project.image, ...fromGallery].filter(Boolean);
+    if (all.length > 0) return all;
+    return ['https://images.unsplash.com/photo-1551281044-8b2ee9b1c1bd?auto=format&fit=crop&w=900&q=80'];
+  }, [project.image, project.images]);
+  const currentImage = images[activeIndex] || images[0];
+  const hasCarousel = images.length > 1;
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [project.id, project.title, images.length]);
+
+  const nextSlide = () => {
+    setActiveIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const prevSlide = () => {
+    setActiveIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
   return (
     <motion.article initial="rest" whileHover="hover" variants={cardHover} className="glass overflow-hidden rounded-3xl">
-      <img
-        src={project.image ? mediaUrl(project.image) : 'https://images.unsplash.com/photo-1551281044-8b2ee9b1c1bd?auto=format&fit=crop&w=900&q=80'}
-        alt={project.title}
-        className="h-52 w-full object-cover"
-      />
+      <div className="relative">
+        <img
+          src={currentImage.startsWith('http') ? currentImage : mediaUrl(currentImage)}
+          alt={project.title}
+          className="h-52 w-full object-cover"
+        />
+        {hasCarousel && (
+          <>
+            <button
+              type="button"
+              onClick={prevSlide}
+              className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full border border-white/35 bg-slate-900/60 px-2 py-1 text-white"
+              aria-label={`Previous image for ${project.title}`}
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              onClick={nextSlide}
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full border border-white/35 bg-slate-900/60 px-2 py-1 text-white"
+              aria-label={`Next image for ${project.title}`}
+            >
+              ›
+            </button>
+            <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-2">
+              {images.map((image, index) => (
+                <button
+                  key={`${project.id || project.title}-${image}-${index}`}
+                  type="button"
+                  onClick={() => setActiveIndex(index)}
+                  className={`h-2.5 w-2.5 rounded-full ${index === activeIndex ? 'bg-cyan-300' : 'bg-white/45'}`}
+                  aria-label={`Go to image ${index + 1} for ${project.title}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
       <div className="space-y-4 p-6">
         <div className="flex items-center justify-between">
           <h3 className="text-2xl font-semibold text-white">{project.title}</h3>

@@ -20,6 +20,10 @@ class HeroSection(TimeStampedModel):
     profile_image = models.ImageField(upload_to='hero/', blank=True, null=True)
     alternate_profile_image = models.ImageField(upload_to='hero/', blank=True, null=True)
     resume_file = models.FileField(upload_to='resume/', blank=True, null=True)
+    contact_email = models.EmailField(blank=True)
+    contact_phone = models.CharField(max_length=30, blank=True)
+    github_url = models.URLField(blank=True)
+    linkedin_url = models.URLField(blank=True)
 
     def __str__(self):
         return 'Hero Section'
@@ -49,6 +53,7 @@ class Skill(TimeStampedModel):
     name = models.CharField(max_length=80)
     category = models.CharField(max_length=20, choices=Category.choices)
     icon = models.CharField(max_length=60, blank=True)
+    icon_file = models.FileField(upload_to='skill-icons/', blank=True, null=True)
     proficiency = models.PositiveSmallIntegerField(default=80)
     order = models.PositiveSmallIntegerField(default=0)
 
@@ -81,6 +86,19 @@ class Project(TimeStampedModel):
 
     def __str__(self):
         return self.title
+
+
+class ProjectImage(TimeStampedModel):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='projects/gallery/')
+    caption = models.CharField(max_length=140, blank=True)
+    order = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return f'{self.project.title} Image {self.id}'
 
 
 class Experience(TimeStampedModel):

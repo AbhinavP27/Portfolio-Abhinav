@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import AboutSection, Certificate, ContactMessage, Experience, HeroSection, Project, Skill, ThemeSettings
+from .models import AboutSection, Certificate, ContactMessage, Experience, HeroSection, Project, ProjectImage, Skill, ThemeSettings
 
 
 class HeroSectionSerializer(serializers.ModelSerializer):
@@ -22,8 +22,21 @@ class SkillSerializer(serializers.ModelSerializer):
 
 
 class ProjectSerializer(serializers.ModelSerializer):
+    images = serializers.SerializerMethodField()
+
+    def get_images(self, obj):
+        return ProjectImageSerializer(obj.images.all(), many=True).data
+
     class Meta:
         model = Project
+        fields = '__all__'
+
+
+class ProjectImageSerializer(serializers.ModelSerializer):
+    project_title = serializers.CharField(source='project.title', read_only=True)
+
+    class Meta:
+        model = ProjectImage
         fields = '__all__'
 
 

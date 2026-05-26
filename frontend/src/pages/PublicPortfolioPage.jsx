@@ -9,6 +9,7 @@ import Timeline from '../components/Timeline';
 import { mediaUrl, publicApiClient } from '../services/api';
 
 function PublicPortfolioPage() {
+  const [isLoading, setIsLoading] = useState(true);
   const [hero, setHero] = useState(null);
   const [about, setAbout] = useState(null);
   const [theme, setTheme] = useState(null);
@@ -28,24 +29,29 @@ function PublicPortfolioPage() {
       })[0] || null;
 
     const fetchAll = async () => {
-      const requests = [
-        publicApiClient.get('/hero/'),
-        publicApiClient.get('/about/'),
-        publicApiClient.get('/theme/'),
-        publicApiClient.get('/skills/'),
-        publicApiClient.get('/projects/'),
-        publicApiClient.get('/experience/'),
-        publicApiClient.get('/certificates/'),
-      ];
-      const [heroRes, aboutRes, themeRes, skillsRes, projectsRes, expRes, certRes] = await Promise.allSettled(requests);
+      setIsLoading(true);
+      try {
+        const requests = [
+          publicApiClient.get('/hero/'),
+          publicApiClient.get('/about/'),
+          publicApiClient.get('/theme/'),
+          publicApiClient.get('/skills/'),
+          publicApiClient.get('/projects/'),
+          publicApiClient.get('/experience/'),
+          publicApiClient.get('/certificates/'),
+        ];
+        const [heroRes, aboutRes, themeRes, skillsRes, projectsRes, expRes, certRes] = await Promise.allSettled(requests);
 
-      if (heroRes.status === 'fulfilled') setHero(pickLatest(heroRes.value.data));
-      if (aboutRes.status === 'fulfilled') setAbout(pickLatest(aboutRes.value.data));
-      if (themeRes.status === 'fulfilled') setTheme(pickLatest(themeRes.value.data));
-      if (skillsRes.status === 'fulfilled') setSkills(skillsRes.value.data);
-      if (projectsRes.status === 'fulfilled') setProjects(projectsRes.value.data);
-      if (expRes.status === 'fulfilled') setExperience(expRes.value.data);
-      if (certRes.status === 'fulfilled') setCertificates(certRes.value.data);
+        if (heroRes.status === 'fulfilled') setHero(pickLatest(heroRes.value.data));
+        if (aboutRes.status === 'fulfilled') setAbout(pickLatest(aboutRes.value.data));
+        if (themeRes.status === 'fulfilled') setTheme(pickLatest(themeRes.value.data));
+        if (skillsRes.status === 'fulfilled') setSkills(skillsRes.value.data);
+        if (projectsRes.status === 'fulfilled') setProjects(projectsRes.value.data);
+        if (expRes.status === 'fulfilled') setExperience(expRes.value.data);
+        if (certRes.status === 'fulfilled') setCertificates(certRes.value.data);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchAll();
@@ -59,6 +65,20 @@ function PublicPortfolioPage() {
   const staticProjects = useMemo(() => projects.filter((project) => project.category === 'static'), [projects]);
   const dynamicProjects = useMemo(() => projects.filter((project) => project.category !== 'static'), [projects]);
   const resumeDownloadUrl = useMemo(() => (hero?.resume_file ? mediaUrl(hero.resume_file) : ''), [hero]);
+
+  if (isLoading) {
+    return (
+      <div className="relative min-h-screen overflow-x-hidden">
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute -left-32 top-20 h-72 w-72 rounded-full bg-violet-500/20 blur-3xl" />
+          <div className="absolute right-4 top-36 h-64 w-64 rounded-full bg-cyan-500/20 blur-3xl" />
+        </div>
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="glass rounded-2xl px-6 py-4 text-sm text-slate-200">Loading latest content...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative overflow-x-hidden">

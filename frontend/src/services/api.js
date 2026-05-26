@@ -38,6 +38,13 @@ export const publicApiClient = axios.create({
   baseURL: API_BASE_URL,
 });
 
+publicApiClient.interceptors.request.use((config) => {
+  if ((config.method || 'get').toLowerCase() === 'get') {
+    config.params = { ...(config.params || {}), _ts: Date.now() };
+  }
+  return config;
+});
+
 apiClient.interceptors.request.use((config) => {
   const token = tokenStore.getAccess();
   if (token) config.headers.Authorization = `Bearer ${token}`;

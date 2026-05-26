@@ -5,6 +5,7 @@ import HeroManagement from './dashboard/HeroManagement';
 import AboutManagement from './dashboard/AboutManagement';
 import SkillsManagement from './dashboard/SkillsManagement';
 import ProjectsManagement from './dashboard/ProjectsManagement';
+import ProjectImagesManagement from './dashboard/ProjectImagesManagement';
 import ExperienceManagement from './dashboard/ExperienceManagement';
 import CertificationsManagement from './dashboard/CertificationsManagement';
 import MessagesPanel from './dashboard/MessagesPanel';
@@ -34,6 +35,7 @@ function App() {
         <Route path="about" element={<AboutManagement />} />
         <Route path="skills" element={<SkillsManagement />} />
         <Route path="projects" element={<ProjectsManagement />} />
+        <Route path="project-images" element={<ProjectImagesManagement />} />
         <Route path="experience" element={<ExperienceManagement />} />
         <Route path="certifications" element={<CertificationsManagement />} />
         <Route path="messages" element={<MessagesPanel />} />

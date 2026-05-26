@@ -16,9 +16,9 @@ function Navbar() {
           initial={{ y: -30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.55 }}
-          className="glass flex items-center justify-between rounded-full px-5 py-3"
+          className="glass flex items-center justify-center gap-8 rounded-full px-5 py-3"
         >
-          <a href="#home" className="font-['Space_Grotesk'] text-lg font-bold tracking-widest text-white">
+          <a href="#home" className="font-['Space_Grotesk'] text-lg font-bold tracking-widest text-white align-left">
             ABHINAV.dev
           </a>
           <ul className="hidden gap-5 text-sm text-slate-200 md:flex">
@@ -30,9 +30,6 @@ function Navbar() {
               </li>
             ))}
           </ul>
-          <a href="/admin/login" className="rounded-full border border-white/20 px-4 py-2 text-xs font-semibold text-slate-100">
-            Admin
-          </a>
         </motion.nav>
       </div>
     </header>

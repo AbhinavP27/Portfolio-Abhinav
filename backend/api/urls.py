@@ -9,6 +9,7 @@ from portfolio.views import (
     ExperienceViewSet,
     HeroSectionViewSet,
     ProjectViewSet,
+    ProjectImageViewSet,
     SkillViewSet,
     ThemeSettingsViewSet,
 )
@@ -18,6 +19,7 @@ router.register('hero', HeroSectionViewSet, basename='hero')
 router.register('about', AboutSectionViewSet, basename='about')
 router.register('skills', SkillViewSet, basename='skills')
 router.register('projects', ProjectViewSet, basename='projects')
+router.register('project-images', ProjectImageViewSet, basename='project-images')
 router.register('experience', ExperienceViewSet, basename='experience')
 router.register('certificates', CertificateViewSet, basename='certificates')
 router.register('messages', ContactMessageViewSet, basename='messages')

@@ -7,6 +7,7 @@ const links = [
   { to: '/admin/about', label: 'About' },
   { to: '/admin/skills', label: 'Skills' },
   { to: '/admin/projects', label: 'Projects' },
+  { to: '/admin/project-images', label: 'Project Images' },
   { to: '/admin/experience', label: 'Experience' },
   { to: '/admin/certifications', label: 'Certifications' },
   { to: '/admin/messages', label: 'Messages' },
@@ -18,9 +19,9 @@ function DashboardSidebar() {
   const { logout } = useAuth();
 
   return (
-    <aside className="glass h-full rounded-3xl p-5">
-      <p className="mb-6 font-['Space_Grotesk'] text-xl font-bold">Portfolio Admin</p>
-      <nav className="space-y-2">
+    <aside className="glass h-full rounded-3xl p-5 lg:flex lg:flex-col lg:overflow-hidden">
+      <p className="mb-6 shrink-0 font-['Space_Grotesk'] text-xl font-bold">Portfolio Admin</p>
+      <nav className="space-y-2 lg:flex-1 lg:overflow-y-auto lg:pr-1">
         {links.map((link) => (
           <NavLink
             key={link.to}
@@ -33,7 +34,7 @@ function DashboardSidebar() {
           </NavLink>
         ))}
       </nav>
-      <button onClick={logout} className="mt-8 w-full rounded-xl border border-white/15 px-4 py-2 text-sm text-slate-200">
+      <button onClick={logout} className="mt-8 w-full shrink-0 rounded-xl border border-white/15 px-4 py-2 text-sm text-slate-200">
         Logout
       </button>
     </aside>

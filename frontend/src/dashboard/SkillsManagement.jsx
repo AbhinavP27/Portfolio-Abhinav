@@ -13,7 +13,8 @@ const fields = [
       { value: 'ai', label: 'AI' },
     ],
   },
-  { name: 'icon', label: 'Icon (e.g. SiReact or https://...)' },
+  { name: 'icon', label: 'Icon Name (optional, e.g. SiReact)' },
+  { name: 'icon_file', label: 'Icon File (optional)', type: 'file' },
   { name: 'proficiency', label: 'Proficiency', type: 'number', defaultValue: 80 },
   { name: 'order', label: 'Order', type: 'number', defaultValue: 0 },
 ];

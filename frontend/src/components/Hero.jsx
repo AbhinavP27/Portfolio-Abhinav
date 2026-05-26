@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { FaEnvelope, FaGithub, FaLinkedin, FaPhoneAlt } from 'react-icons/fa';
 import { fadeUp } from '../animations/motionPresets';
 import CursorImageReveal from './CursorImageReveal';
 
@@ -11,6 +12,48 @@ function Hero({ heroData, theme }) {
     }),
     [theme],
   );
+  const contactLinks = useMemo(() => {
+    const links = [];
+
+    if (heroData?.contact_email) {
+      links.push({
+        key: 'email',
+        href: `mailto:${heroData.contact_email}`,
+        label: 'Email',
+        icon: FaEnvelope,
+      });
+    }
+
+    if (heroData?.contact_phone) {
+      const phone = String(heroData.contact_phone).replace(/\s+/g, '');
+      links.push({
+        key: 'phone',
+        href: `tel:${phone}`,
+        label: 'Phone',
+        icon: FaPhoneAlt,
+      });
+    }
+
+    if (heroData?.github_url) {
+      links.push({
+        key: 'github',
+        href: heroData.github_url,
+        label: 'GitHub',
+        icon: FaGithub,
+      });
+    }
+
+    if (heroData?.linkedin_url) {
+      links.push({
+        key: 'linkedin',
+        href: heroData.linkedin_url,
+        label: 'LinkedIn',
+        icon: FaLinkedin,
+      });
+    }
+
+    return links;
+  }, [heroData]);
 
   return (
     <section id="home" className="relative isolate min-h-screen overflow-hidden" style={accentStyle}>
@@ -43,6 +86,28 @@ function Hero({ heroData, theme }) {
               {heroData?.secondary_button_label || 'Start a Project'}
             </a>
           </div>
+          {contactLinks.length > 0 && (
+            <div className="mt-6 flex items-center gap-4">
+              {contactLinks.map((item) => {
+                const Icon = item.icon;
+                const isExternal = item.key === 'github' || item.key === 'linkedin';
+
+                return (
+                  <a
+                    key={item.key}
+                    href={item.href}
+                    target={isExternal ? '_blank' : undefined}
+                    rel={isExternal ? 'noreferrer' : undefined}
+                    aria-label={item.label}
+                    title={item.label}
+                    className="grid h-11 w-11 place-items-center rounded-full border border-white/20 text-slate-100 transition hover:border-[var(--secondary)] hover:text-[var(--secondary)]"
+                  >
+                    <Icon className="text-lg" />
+                  </a>
+                );
+              })}
+            </div>
+          )}
         </motion.div>
 
         <motion.div
