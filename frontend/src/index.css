@@ -69,3 +69,39 @@ body {
   background: #0B0F19;
   font-family: Inter, sans-serif;
 }
+
+/* Custom Scrollbars for Admin Dashboard (No Tailwind) */
+.admin-dashboard,
+.admin-dashboard * {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(124, 58, 237, 0.35) rgba(15, 22, 41, 0.2);
+}
+
+/* Chrome, Safari, Edge */
+.admin-dashboard::-webkit-scrollbar,
+.admin-dashboard *::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.admin-dashboard::-webkit-scrollbar-track,
+.admin-dashboard *::-webkit-scrollbar-track {
+  background: rgba(15, 22, 41, 0.3);
+  border-radius: 9999px;
+  border: 1px solid rgba(148, 163, 184, 0.05);
+}
+
+.admin-dashboard::-webkit-scrollbar-thumb,
+.admin-dashboard *::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(124, 58, 237, 0.4), rgba(56, 189, 248, 0.4));
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background-clip: padding-box;
+}
+
+.admin-dashboard::-webkit-scrollbar-thumb:hover,
+.admin-dashboard *::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(124, 58, 237, 0.8), rgba(56, 189, 248, 0.8));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 12px rgba(124, 58, 237, 0.4);
+}
