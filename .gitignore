@@ -1,0 +1,74 @@
+# ==========================================
+# Comprehensive .gitignore for Portfolio project
+# Covers Node/React frontend and Python/Django backend
+# ==========================================
+
+# --- Node / React (Frontend) ---
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/.eslintcache
+frontend/.vite/
+
+# --- Python / Django (Backend) ---
+# Virtual Environment
+backend/venv/
+backend/.venv/
+backend/env/
+backend/ENV/
+backend/env.bak/
+backend/venv.bak/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+backend/**/__pycache__/
+backend/**/*.py[cod]
+
+# Database (SQLite)
+backend/db.sqlite3
+backend/db.sqlite3-journal
+
+# Django local configurations & secrets
+backend/.env
+backend/local_settings.py
+
+# User uploaded media
+backend/media/
+
+# Logs
+*.log
+backend/*.log
+
+# --- System & IDE files ---
+# OS files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editors and IDEs
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.settings/
