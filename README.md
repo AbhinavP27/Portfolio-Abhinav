@@ -5,7 +5,7 @@ Premium full stack developer portfolio platform with dynamic content management.
 ## Stack
 
 - Frontend: React, Vite, Tailwind CSS, Framer Motion, Axios, React Router
-- Backend: Django, Django REST Framework, JWT, SQLite
+- Backend: Django, Django REST Framework, SQLite
 
 ## Project Structure
 
@@ -16,8 +16,6 @@ Portfolio-Abhinav/
 ¦   ¦   +-- animations/
 ¦   ¦   +-- assets/
 ¦   ¦   +-- components/
-¦   ¦   +-- dashboard/
-¦   ¦   +-- hooks/
 ¦   ¦   +-- pages/
 ¦   ¦   +-- services/
 ¦   +-- package.json
@@ -25,7 +23,6 @@ Portfolio-Abhinav/
 +-- backend/
     +-- core/
     +-- portfolio/
-    +-- authentication/
     +-- api/
     +-- media/
     +-- requirements.txt
@@ -63,7 +60,6 @@ Frontend runs at `http://127.0.0.1:5173`.
 
 ```bash
 VITE_API_BASE_URL=http://127.0.0.1:8000/api
-VITE_AUTH_BASE_URL=http://127.0.0.1:8000/api/auth
 VITE_BACKEND_ORIGIN=http://127.0.0.1:8000
 ```
 
@@ -73,29 +69,28 @@ Current config is development-ready in `core/settings.py` (SQLite + open CORS). 
 
 ## API Endpoints
 
-- Auth
-  - `POST /api/auth/login/`
-  - `POST /api/auth/refresh/`
-  - `GET /api/auth/me/`
-- Content
-  - `GET/POST/PUT/DELETE /api/hero/`
-  - `GET/POST/PUT/DELETE /api/skills/`
-  - `GET/POST/PUT/DELETE /api/projects/`
-  - `GET/POST/PUT/DELETE /api/experience/`
-  - `GET/POST/PUT/DELETE /api/certificates/`
-  - `POST /api/messages/` (public create)
-  - `GET /api/messages/` (admin)
-  - `POST /api/messages/{id}/mark_read/` (admin)
-  - `GET/POST/PUT/DELETE /api/theme/`
-  - `POST /api/theme/track_visit/`
-  - `POST /api/theme/track_resume_download/`
-- Dashboard
-  - `GET /api/dashboard/stats/`
+Public read-only content:
+
+- `GET /api/hero/`
+- `GET /api/about/`
+- `GET /api/skills/`
+- `GET /api/projects/`
+- `GET /api/project-images/`
+- `GET /api/experience/`
+- `GET /api/certificates/`
+- `GET /api/theme/`
+- `POST /api/messages/` (contact form)
+- `POST /api/theme/track_visit/`
+- `POST /api/theme/track_resume_download/`
 
 ## Admin Access
 
-- Login page: `http://localhost:5173/admin/login`
-- Use Django admin staff/superuser credentials.
+Content is managed through the Django admin panel:
+
+- Local: `http://127.0.0.1:8000/admin/`
+- Log in with the superuser credentials created via `createsuperuser`
+
+From Django admin you can edit hero, about, skills, projects, project images, experience, certificates, contact messages, and theme settings.
 
 ## Deployment
 
@@ -106,7 +101,6 @@ Current config is development-ready in `core/settings.py` (SQLite + open CORS). 
 3. Output directory: `dist`
 4. Set env vars:
    - `VITE_API_BASE_URL=https://<render-backend>/api`
-   - `VITE_AUTH_BASE_URL=https://<render-backend>/api/auth`
    - `VITE_BACKEND_ORIGIN=https://<render-backend>`
 
 ### Backend (Render)
