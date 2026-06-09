@@ -106,10 +106,10 @@ From Django admin you can edit hero, about, skills, projects, project images, ex
 ### Backend (Render)
 
 1. Create new Web Service from `backend` folder.
-2. Build command: `pip install -r requirements.txt`
-3. Start command: `python manage.py migrate && python manage.py runserver 0.0.0.0:$PORT`
+2. Build command: `pip install -r requirements.txt && python manage.py collectstatic --noinput`
+3. Start command: `python manage.py migrate && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT`
 4. Configure env:
    - `DEBUG=False`
    - `ALLOWED_HOSTS=<render-domain>`
 
-For production, switch to Gunicorn and secure CORS/hosts.
+Static files are served by WhiteNoise. Keep `DEBUG=False` in production and use strict CORS/hosts.
